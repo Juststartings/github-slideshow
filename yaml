@@ -1,0 +1,47 @@
+CI/CD Classic to YAML Migration Checklist
+1. Trigger & Repository Info
+[ ] Repository type and URL (Azure Repos, GitHub, etc.)
+[ ] Branch filters for CI/CD trigger
+[ ] Path filters (include/exclude folders/files)
+[ ] Pull Request triggers
+[ ] Scheduled triggers (CRON or interval-based)
+2. Variables
+[ ] Pipeline-level variables
+[ ] Secret variables
+[ ] Variable groups (including Azure Key Vault references)
+[ ] Environment-specific variable overrides
+3. Build Pipeline Tasks
+[ ] Task name and type (e.g., .NET build, npm install)
+[ ] Task input parameters (e.g., arguments, file paths)
+[ ] Execution order of tasks
+[ ] Custom scripts (PowerShell, Bash, CMD)
+[ ] Task conditions (run on success/failure/etc.)
+[ ] Agent pool and specification (e.g., windows-latest)
+4. Artifacts
+[ ] Artifact names and paths
+[ ] Artifact publish location
+[ ] Artifact usage in release pipeline
+5. Release Pipeline Info
+[ ] Release stages (e.g., QA, Staging, Production)
+[ ] Deployment tasks per stage
+[ ] Stage-specific variables/configurations
+6. Environments & Approvals
+[ ] Defined environments
+[ ] Pre-deployment approvals (user/group)
+[ ] Post-deployment approvals
+[ ] Gates (delay, query checks, etc.)
+7. Service Connections
+[ ] Azure, Docker Hub, GitHub, or other service connections
+[ ] Connection names and scopes
+8. Retention, Notifications, and Other Settings
+[ ] Retention policies
+[ ] Pipeline notification rules
+[ ] Build tags
+[ ] Branch policies linked to pipeline
+9. Security & Access
+[ ] Approval permissions (who can approve)
+[ ] Pipeline-level security settings
+Add Comment
+Please, Sign In to add comment
+create new paste  /  syntax languages  /  archive  /  faq  /  tools  /  night mode  /  api  /  scraping api  /  news  /  pro
+privacy statement  /  cookies policy  /  terms of service /  security disclosure  /  dmca  /  report abuse  /  contact
