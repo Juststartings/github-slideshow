@@ -1,0 +1,139 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+ 
+pr:
+  branches:
+    include:
+      - main
+      - develop
+ 
+# â° Scheduled trigger (runs every night at 2 AM UTC on main)
+schedules:
+  - cron: "0 2 * * *"
+    displayName: Nightly build
+    branches:
+      include:
+        - main
+    always: true
+ 
+variables:
+  buildConfiguration: 'Release'
+ 
+# ======================== STAGES =========================
+stages:
+ 
+# ------------ UNIVERSAL BUILD STAGE --------------
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+    # -------- .NET BUILD --------
+    - job: Build_DotNet
+      displayName: '.NET Build'
+      condition: eq(variables['Build.SourceBranchName'], 'main')
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+        - task: UseDotNet@2
+          inputs:
+            packageType: 'sdk'
+            version: '6.x.x'
+ 
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'build'
+            projects: '**/*.csproj'
+            arguments: '--configuration $(buildConfiguration)'
+ 
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'publish'
+            publishWebProjects: true
+            arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+            zipAfterPublish: true
+ 
+    # -------- NODE BUILD --------
+    - job: Build_Node
+      displayName: 'Node.js Build'
+      condition: eq(variables['Build.SourceBranchName'], 'develop')
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '18.x'
+ 
+        - script: |
+            npm install
+            npm run build
+          displayName: 'Install & Build Node App'
+ 
+    # -------- PYTHON BUILD --------
+    - job: Build_Python
+      displayName: 'Python Build'
+      condition: false  # enable if needed
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.10'
+ 
+        - script: |
+            pip install -r requirements.txt
+            python -m unittest discover
+          displayName: 'Install & Test Python App'
+ 
+    # -------- JAVA BUILD --------
+    - job: Build_Java
+      displayName: 'Java Maven Build'
+      condition: false  # enable if needed
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - script: mvn clean install
+          displayName: 'Build with Maven'
+ 
+# ----------- DEV STAGE (Auto) ------------
+- stage: Dev
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'develop'))
+  jobs:
+    - deployment: DevDeploy
+      environment: 'dev'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - script: echo "Deploying to DEV..."
+              - script: echo "Download and deploy artifacts here"
+ 
+# ----------- UAT STAGE (Approval) ------------
+- stage: UAT
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
+  jobs:
+    - deployment: UATDeploy
+      environment: 'uat'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - script: echo "Deploying to UAT..."
+              - script: echo "Download and deploy artifacts here"
+ 
+# ----------- PROD STAGE (Approval) ------------
+- stage: Prod
+  dependsOn: UAT
+  condition: succeeded()
+  jobs:
+    - deployment: ProdDeploy
+      environment: 'prod'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - script: echo "Deploying to PROD..."
+              - script: echo "Download and deploy artifacts here
